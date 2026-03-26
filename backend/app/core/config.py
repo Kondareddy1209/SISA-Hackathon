@@ -33,7 +33,7 @@ def get_cors_origins() -> list:
         "http://localhost:5173",
         "http://127.0.0.1:5173",
     ]
-    frontend_url = os.getenv("FRONTEND_URL", "").strip()
+    frontend_url = os.getenv("FRONTEND_URL", "").strip().rstrip("/")
     if frontend_url:
         origins.append(frontend_url)
     return origins

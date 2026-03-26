@@ -27,7 +27,11 @@ MAX_CONTENT_CHARS = 500_000
 def verify_token(
     credentials: HTTPAuthorizationCredentials = Depends(security),
 ):
-    """Optional bearer token auth; skip if no token configured."""
+    """Bearer token auth is opt-in for deployed public frontends."""
+    auth_enabled = os.getenv("REQUIRE_API_BEARER_TOKEN", "").lower() == "true"
+    if not auth_enabled:
+        return
+
     configured = os.getenv("API_BEARER_TOKEN", "")
     if configured and configured != "changeme":
         if not credentials or credentials.credentials != configured:
