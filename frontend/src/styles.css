@@ -793,9 +793,11 @@ textarea::placeholder {
 .mobile-nav-content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 0 16px;
+  gap: 16px;
+  padding: 16px;
   overflow-y: auto;
+  flex: 1;
+  width: 100%;
 }
 
 .mobile-nav-content .sidebar-main {
@@ -806,17 +808,28 @@ textarea::placeholder {
   padding: 0 !important;
   background: transparent !important;
   gap: 16px;
+  overflow: visible !important;
 }
 
 .mobile-nav-content .sidebar-section-title {
   margin-bottom: 12px;
   font-weight: 700;
+  color: #e6eef8;
+  font-size: 14px;
 }
 
 .mobile-nav-content .sidebar-type-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  width: 100%;
+}
+
+.mobile-nav-content .sidebar-options-grid {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  margin-top: 8px;
 }
 
 .mobile-nav-content .sidebar-options-grid {
@@ -851,6 +864,49 @@ textarea::placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+
+  /* Mobile nav tab buttons styling */
+  .mobile-nav-content .tab-button {
+    justify-content: flex-start;
+    padding: 12px 16px;
+    min-height: 44px;
+    border-radius: 8px;
+    width: 100%;
+    text-align: left;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .mobile-nav-content .tab-button:hover {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .mobile-nav-content .tab-button.active {
+    background: rgba(88, 166, 255, 0.15);
+    border-color: #58a6ff;
+  }
+
+  /* Mobile nav option rows */
+  .mobile-nav-content .sidebar-option-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+  }
+
+  .mobile-nav-content .switch {
+    width: 44px;
+    height: 24px;
+  }
+
+  .mobile-nav-content .model-badge {
+    padding: 10px 12px;
+    font-size: 12px;
+    text-align: center;
+    background: #1e293b;
+    border: 1px solid #374151;
+    border-radius: 6px;
   }
 
   /* Log drawer fullscreen on mobile */
