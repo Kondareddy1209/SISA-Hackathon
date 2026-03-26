@@ -33,7 +33,7 @@ def test_analyze_log():
     def test_analyze_log():
         payload = {
             "input_type": "log",
-            "content": "password=secret123\napi_key=sk-abcdefghijklmnopqrst\nemail=test@example.com",
+            "content": "password=EXAMPLEPASS\napi_key=sk-EXAMPLE000000000\nemail=test@example.com",
             "options": {"mask_output": True, "use_ai": False, "block_on_critical": True},
         }
         r = client.post("/api/analyze", json=payload)
@@ -60,7 +60,7 @@ def test_analyze_log():
 def test_analyze_log():
     payload = {
         "input_type": "log",
-        "content": "password=secret123\napi_key=sk-abcdefghijklmnopqrstuvwx\nemail=test@example.com",
+        "content": "password=EXAMPLEPASS\napi_key=sk-EXAMPLE000000000\nemail=test@example.com",
         "options": {"mask_output": True, "use_ai": False, "block_on_critical": True},
     }
     r = client.post("/api/analyze", json=payload)

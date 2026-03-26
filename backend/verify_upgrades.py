@@ -35,13 +35,13 @@ t4 = any(f["type"] == "private_key_block" for f in f4)
 print(f"{'PASS' if t4 else 'FAIL'} T4: Private key - {[f['type'] for f in f4]}")
 
 # Test 5: High entropy (statistical)
-text5 = "token=aB3kL9mN2pQ7rS4tU6vW1xY8zA5bC0dE"
+text5 = "token=TESTAbC123xYz456QwEr789TyUi012OpLm"
 f5 = detect_statistical_anomalies(text5, "text")
 t5 = any(f["type"] == "high_entropy_string" for f in f5)
 print(f"{'PASS' if t5 else 'FAIL'} T5: High entropy - {[f['type'] for f in f5]}")
 
 # Test 6: ML correlation
-text6 = "password=secret api_key=abc token=xyz email=a@b.com"
+text6 = "password=TESTPASS api_key=TESTKEY token=TESTTOKEN email=a@b.com"
 f_existing = [{"risk": "critical"}, {"risk": "high"}, {"risk": "high"}]
 f6 = detect_ml_anomalies(text6, f_existing)
 t6 = len(f6) > 0

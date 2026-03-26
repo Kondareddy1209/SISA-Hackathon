@@ -8,8 +8,8 @@ print("=" * 65)
 
 SPEC_INPUT = """2026-03-10 10:00:01 INFO User login
 email=admin@company.com
-password=admin123
-api_key=sk-prod-xyz
+password=TEST_ONLY
+api_key=sk-EXAMPLE000000000
 ERROR stack trace: NullPointerException at service.java:45"""
 
 from app.modules.detection.log_analyzer import analyze_log

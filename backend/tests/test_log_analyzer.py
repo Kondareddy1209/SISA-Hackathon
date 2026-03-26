@@ -5,8 +5,8 @@ from app.modules.detection.log_analyzer import analyze_log
 
 SAMPLE_LOG = """2026-03-10 10:00:01 INFO User login
 email=admin@company.com
-password=admin123
-api_key=sk-prod-xyz123456789abcdefgh
+password=TEST_ONLY
+api_key=sk-EXAMPLE000000000
 ERROR stack trace: NullPointerException at service.java:45"""
 
 

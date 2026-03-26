@@ -36,8 +36,8 @@ test("Patterns endpoint exists", lambda: (
 # Spec log test
 SPEC_LOG = """2026-03-10 10:00:01 INFO User login
 email=admin@company.com
-password=admin123
-api_key=sk-prod-xyz
+password=TEST_ONLY
+api_key=sk-EXAMPLE000000000
 ERROR stack trace: NullPointerException at service.java:45"""
 
 resp = requests.post(f"{BASE}/analyze", json={
@@ -53,7 +53,7 @@ test("Log: Risk level HIGH", lambda: resp.get("risk_level") == "high")
 test("Log: Action masked", lambda: resp.get("action") == "masked")
 
 # Text input
-TEXT = "email=admin@test.com password=hunter2 api_key=sk-prod-test123"
+TEXT = "email=admin@test.com password=TESTPASS api_key=sk-EXAMPLE000000000"
 resp2 = requests.post(f"{BASE}/analyze", json={
     "input_type": "text",
     "content": TEXT,

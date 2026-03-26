@@ -52,8 +52,8 @@ except Exception as e:
 print("\n[3] SPEC EXAMPLE — LOG INPUT (Section 9)")
 SPEC_LOG = """2026-03-10 10:00:01 INFO User login
 email=admin@company.com
-password=admin123
-api_key=sk-prod-xyz
+password=TEST_ONLY
+api_key=sk-EXAMPLE000000000
 ERROR stack trace: NullPointerException at service.java:45"""
 
 try:
@@ -87,8 +87,8 @@ except Exception as e:
 
 # ── SECTION 4: Text Input (10 marks) ─────────────────────────
 print("\n[4] TEXT INPUT")
-TEXT_INPUT = ("My email is admin@company.com and my password is hunter2. "
-              "The API key is sk-prod-abc123def456ghi789jkl012")
+TEXT_INPUT = ("My email is admin@company.com and my password is TEST_PASSWORD. "
+              "The API key is sk-EXAMPLE000000000")
 try:
     r = requests.post(f"{BASE}/analyze", json={
         "input_type": "text",
@@ -153,7 +153,7 @@ print("\n[7] API CONTRACT — ALL REQUIRED FIELDS")
 try:
     r = requests.post(f"{BASE}/analyze", json={
         "input_type": "text",
-        "content": "password=secret123",
+        "content": "password=EXAMPLEPASS",
         "options": {}
     }, timeout=15)
     d = r.json()
@@ -176,7 +176,7 @@ print("\n[8] AI INSIGHTS")
 try:
     r = requests.post(f"{BASE}/analyze", json={
         "input_type": "text",
-        "content": "api_key=sk-prod-test123456789 password=admin123",
+        "content": "api_key=sk-EXAMPLE000000000 password=TEST_ONLY",
         "options": {"use_ai": True, "mask": True}
     }, timeout=35)
     d = r.json()
@@ -197,7 +197,7 @@ print("\n[9] MASKING & POLICY")
 try:
     r = requests.post(f"{BASE}/analyze", json={
         "input_type": "text",
-        "content": "password=supersecret123 email=user@test.com",
+        "content": "password=EXAMPLEPASS email=user@test.com",
         "options": {"mask": True, "block_high_risk": False}
     }, timeout=15)
     d = r.json()

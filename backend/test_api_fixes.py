@@ -12,7 +12,7 @@ async def run_tests():
     
     payload1 = {
         "input_type": "text",
-        "content": "My email is admin@company.com and my password is hunter2. The API key is sk-prod-abc123def456ghi789jkl012",
+        "content": "My email is admin@company.com and my password is TEST_PASSWORD. The API key is sk-EXAMPLE000000000",
         "options": {
             "mask": True,
             "block_high_risk": True
@@ -36,7 +36,7 @@ async def run_tests():
     
     payload2 = {
         "input_type": "chat",
-        "content": "Hi, my token is Bearer eyJhbGciOiJIUzI1NiJ9.test and secret=mysecretkey123",
+        "content": "Hi, my token is Bearer TESTTOKENVALUE and secret=TEST_SECRET_VALUE",
         "options": {
             "mask": True,
             "block_high_risk": True

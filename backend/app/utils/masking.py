@@ -4,7 +4,7 @@ from typing import Dict
 def mask_api_key(value: str) -> str:
     """Mask API keys keeping a recognizable prefix for `sk-` style keys.
 
-    Example: "sk-abcdefghijklmnop" -> "sk-***REDACTED***"
+    Example: "sk-EXAMPLE000000000" -> "sk-***REDACTED***"
     """
     if not value:
         return value

@@ -44,6 +44,17 @@ frontend/build/
 .env
 .env.*
 !.env.example
+.env.local
+.env.production
+*.env
+
+# Never commit these
+backend/.env
+frontend/.env
+
+# Python cache
+*.pyc
+*.pyo
 
 # OS
 .DS_Store

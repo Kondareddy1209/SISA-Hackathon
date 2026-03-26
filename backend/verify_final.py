@@ -19,13 +19,13 @@ t1 = any(f["type"] == "injection_keyword_density" for f in f1)
 print(f"{'PASS' if t1 else 'FAIL'} T1: SQL statistical - {[f['type'] for f in f1]}")
 
 # T2: Short log gets statistical findings
-log_text = "2026-03-10 email=admin@company.com\npassword=admin123\napi_key=sk-prod-xyz"
+log_text = "2026-03-10 email=admin@company.com\npassword=TEST_ONLY\napi_key=sk-EXAMPLE000000000"
 f2 = detect_statistical_anomalies(log_text, "log")
 t2 = len(f2) > 0
 print(f"{'PASS' if t2 else 'FAIL'} T2: Short log statistical - {[f['type'] for f in f2]}")
 
 # T3: High entropy has line number
-text3 = "line1\ntoken=aB3kL9mN2pQ7rS4tU6vW1xY8zA5bC0dEfGhIjKlMnOpQrSt\nline3"
+text3 = "line1\ntoken=TESTAbC123xYz456QwEr789TyUi012OpLmNoPq\nline3"
 f3 = detect_high_entropy_strings(text3)
 t3 = any(f.get("line") == 2 for f in f3)
 print(f"{'PASS' if t3 else 'FAIL'} T3: Entropy line number - {[(f['type'], f.get('line')) for f in f3]}")
