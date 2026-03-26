@@ -28,9 +28,6 @@ MASK_RULES = {
 }
 
 SIMPLE_MASK = "[MASKED]"
-BLOCK_LEVELS = {"critical", "high"}
-
-
 def mask_finding_value(value: str, finding_type: str) -> str:
     """Apply type-specific masking to a sensitive value"""
     masker = MASK_RULES.get(finding_type)
@@ -50,7 +47,7 @@ def determine_action(risk_level: str, options: Dict) -> str:
     block_high_risk = options.get("block_high_risk", True)
     mask = options.get("mask", True)
 
-    if block_high_risk and risk_level in BLOCK_LEVELS:
+    if block_high_risk and risk_level == "critical":
         return "blocked"
     elif mask:
         return "masked"
