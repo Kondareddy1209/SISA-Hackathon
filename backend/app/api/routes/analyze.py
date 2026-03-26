@@ -18,6 +18,7 @@ from app.modules.risk.risk_engine import (
     get_risk_level,
     get_risk_summary,
 )
+from app.utils.logger import log_event
 
 router = APIRouter()
 security = HTTPBearer(auto_error=False)
@@ -30,15 +31,18 @@ def verify_token(
     """Bearer token auth is opt-in for deployed public frontends."""
     auth_enabled = os.getenv("REQUIRE_API_BEARER_TOKEN", "").lower() == "true"
     if not auth_enabled:
+        log_event("DEBUG", "Auth bypassed for request", auth="disabled")
         return
 
     configured = os.getenv("API_BEARER_TOKEN", "")
     if configured and configured != "changeme":
         if not credentials or credentials.credentials != configured:
+            log_event("WARN", "Bearer token rejected", auth="failed")
             raise HTTPException(
                 status_code=401,
                 detail="Invalid or missing bearer token",
             )
+        log_event("INFO", "Bearer token accepted", auth="success")
 
 
 class AnalyzeOptions(BaseModel):
@@ -102,6 +106,7 @@ async def analyze(
     Matches official project spec API contract exactly.
     """
     content_type = request.headers.get("content-type", "")
+    log_event("INFO", "Analysis request received", route="/analyze", content_type=content_type or "unknown")
 
     if "multipart/form-data" in content_type:
         form = await request.form()

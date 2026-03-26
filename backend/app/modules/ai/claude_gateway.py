@@ -6,6 +6,8 @@ from typing import Dict, List
 
 import anthropic
 
+from app.utils.logger import log_event
+
 
 def _get_client() -> anthropic.Anthropic:
     api_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
@@ -82,16 +84,25 @@ async def get_ai_insights(
     Falls back to rule-based insights if Claude is unavailable or parsing fails.
     """
     if not findings:
+        log_event("DEBUG", "AI insights skipped because no findings were detected", source="ai_gateway")
         return ["No sensitive data detected. Content appears secure."]
 
     api_key = os.getenv("ANTHROPIC_API_KEY", "").strip()
     if not api_key:
-        print("AI SKIP: No API key - using fallback insights")
+        log_event("WARN", "AI insights fallback because ANTHROPIC_API_KEY is not configured", source="ai_gateway")
         return generate_fallback_insights(findings)
 
     raw_response = ""
     try:
         client = _get_client()
+        log_event(
+            "INFO",
+            "AI model call started",
+            source="ai_gateway",
+            model="claude-sonnet-4-6",
+            findings_count=len(findings),
+            content_type=content_type,
+        )
 
         findings_summary = json.dumps(
             [
@@ -148,7 +159,13 @@ Rules:
         )
 
         raw_response = message.content[0].text.strip()
-        print(f"CLAUDE OK: {raw_response[:120]}")
+        log_event(
+            "INFO",
+            "AI model call completed",
+            source="ai_gateway",
+            model="claude-sonnet-4-6",
+            response_preview=raw_response[:120],
+        )
 
         clean_response = raw_response
         for fence in ("```json", "```JSON", "```"):
@@ -172,18 +189,24 @@ Rules:
 
             return [str(insight) for insight in insights[:6]]
         except Exception:
+            log_event("WARN", "AI response parsing failed, using fallback insights", source="ai_gateway")
             return generate_fallback_insights(findings)
 
     except asyncio.TimeoutError:
-        print("AI TIMEOUT: Claude >25s - using fallback")
+        log_event("ERROR", "AI model call timed out after 25s", source="ai_gateway")
     except anthropic.AuthenticationError:
-        print("AI AUTH ERROR: Invalid ANTHROPIC_API_KEY")
+        log_event("ERROR", "AI authentication failed", source="ai_gateway")
     except anthropic.RateLimitError:
-        print("AI RATE LIMIT: Quota exceeded")
+        log_event("WARN", "AI rate limit encountered", source="ai_gateway")
     except anthropic.APIConnectionError:
-        print("AI CONNECTION ERROR: Cannot reach Anthropic API")
+        log_event("ERROR", "AI connection error while reaching Anthropic", source="ai_gateway")
     except Exception as exc:
-        print(f"AI ERROR: {type(exc).__name__}: {exc}")
+        log_event(
+            "ERROR",
+            f"AI model call failed with {type(exc).__name__}",
+            source="ai_gateway",
+            error=str(exc),
+        )
         traceback.print_exc()
 
     return generate_fallback_insights(findings)

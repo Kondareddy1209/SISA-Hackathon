@@ -52,3 +52,17 @@ export interface AnalyzeOptions {
   block_high_risk: boolean;
 }
 
+export interface LiveLogEntry {
+  timestamp: string;
+  level: "INFO" | "WARN" | "ERROR" | "DEBUG" | string;
+  message: string;
+  method?: string;
+  path?: string;
+  status_code?: number;
+  response_time_ms?: number;
+  ip?: string;
+  event?: string;
+  source?: string;
+  error?: string;
+}
+

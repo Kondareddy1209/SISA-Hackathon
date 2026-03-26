@@ -1,4 +1,4 @@
-import type { AnalyzeResponse, AnalyzeOptions } from "../types/index"
+import type { AnalyzeResponse, AnalyzeOptions, LiveLogEntry } from "../types/index"
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -35,4 +35,31 @@ export async function analyzeFile(file: File, options: AnalyzeOptions): Promise<
 
 export async function checkHealth(): Promise<{ status: string; version: string }> {
   return request('/health')
+}
+
+export async function getLogHistory(): Promise<LiveLogEntry[]> {
+  return request<LiveLogEntry[]>('/api/logs/history')
+}
+
+export function streamLogs(
+  onMessage: (entry: LiveLogEntry) => void,
+  onError?: (error: Event | Error) => void,
+) {
+  const source = new EventSource(`${API_BASE_URL}/api/logs/stream`)
+
+  source.onmessage = (event) => {
+    try {
+      onMessage(JSON.parse(event.data) as LiveLogEntry)
+    } catch (error) {
+      onError?.(error instanceof Error ? error : new Error('Failed to parse log event'))
+    }
+  }
+
+  source.onerror = (error) => {
+    onError?.(error)
+  }
+
+  return () => {
+    source.close()
+  }
 }
