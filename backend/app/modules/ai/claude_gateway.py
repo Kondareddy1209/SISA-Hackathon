@@ -216,8 +216,13 @@ Rules:
             "message": "AI analysis timed out",
             "fallback": "Using rule-based analysis"
         }
-    except anthropic.AuthenticationError:
-        log_event("ERROR", "AI authentication failed", source="ai_gateway")
+    except anthropic.AuthenticationError as e:
+        log_event(
+            "ERROR", 
+            "AI authentication failed - check ANTHROPIC_API_KEY validity", 
+            source="ai_gateway",
+            error_detail=str(e)
+        )
         return {
             "error": True,
             "type": "AUTH_ERROR",
@@ -225,15 +230,20 @@ Rules:
             "fallback": "Using rule-based analysis"
         }
     except anthropic.RateLimitError:
-        log_event("WARN", "AI rate limit encountered", source="ai_gateway")
+        log_event("WARN", "AI rate limit exceeded", source="ai_gateway")
         return {
             "error": True,
             "type": "RATE_LIMIT",
             "message": "AI rate limit exceeded",
             "fallback": "Using rule-based analysis"
         }
-    except anthropic.APIConnectionError:
-        log_event("ERROR", "AI connection error while reaching Anthropic", source="ai_gateway")
+    except anthropic.APIConnectionError as e:
+        log_event(
+            "ERROR", 
+            "Could not connect to AI service", 
+            source="ai_gateway",
+            error_detail=str(e)
+        )
         return {
             "error": True,
             "type": "CONNECTION_ERROR",

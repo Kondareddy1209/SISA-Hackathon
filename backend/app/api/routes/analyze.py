@@ -210,7 +210,9 @@ async def analyze(
         
         # Check if AI returned an error
         if isinstance(ai_insights, dict) and ai_insights.get("error") is True:
-            if ai_insights.get("type") == "INSUFFICIENT_CREDITS":
+            error_type = ai_insights.get("type", "UNKNOWN")
+            
+            if error_type == "INSUFFICIENT_CREDITS":
                 raise HTTPException(
                     status_code=503,
                     detail={
@@ -220,15 +222,24 @@ async def analyze(
                         "service": "Anthropic Claude"
                     }
                 )
+            elif error_type in ["AUTH_ERROR", "CONNECTION_ERROR", "RATE_LIMIT"]:
+                # These are transient AI service issues - fall back gracefully
+                log_event(
+                    "WARN", 
+                    f"AI service unavailable ({error_type}), using rule-based analysis", 
+                    route="/analyze",
+                    error_type=error_type
+                )
+                ai_insights = []
             else:
-                log_event("WARN", f"AI error encountered: {ai_insights.get('type')}", route="/analyze")
-                # Use fallback insights from the error response
+                # Other AI errors - also fall back
+                log_event("WARN", f"AI error encountered: {error_type}", route="/analyze", error_type=error_type)
                 ai_insights = []
         else:
-            is_fallback = not ai_insights or any(
+            is_fallback = not ai_insights or (isinstance(ai_insights, list) and len(ai_insights) > 0 and any(
                 phrase in ai_insights[0].lower()
                 for phrase in ["unavailable", "appears secure", "review all"]
-            )
+            ))
             ai_findings_count = len(ai_insights) if not is_fallback else 0
     elif not all_findings:
         ai_insights = ["No sensitive data detected. Content appears secure."]
