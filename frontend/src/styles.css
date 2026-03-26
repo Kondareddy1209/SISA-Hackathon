@@ -13,7 +13,16 @@ textarea, input, button, select{ font-family: 'Fira Code', 'IBM Plex Mono', mono
 @keyframes fade-in{ from{ opacity:0; transform: translateY(6px) } to{ opacity:1; transform:none } }
 html, body, #root, .app-root { height: 100%; margin: 0 }
 
-.app-root { min-height:100vh }
+.app-root { 
+  min-height: 100vh; 
+  display: flex;
+  flex-direction: column;
+}
+
+.app-root > .flex {
+  flex: 1;
+  width: 100%;
+}
 
 .glass-header{ background: linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); box-shadow: 0 1px 0 rgba(255,255,255,0.02) }
 
@@ -208,7 +217,7 @@ html, body, #root, .app-root { height: 100%; margin: 0 }
 .finding-ip-external { border: 1px solid #60a5fa; background: rgba(23, 37, 84, 0.28); }
 
 /* Utility Classes */
-.flex { display: flex; }
+.flex { display: flex; flex: 1; }
 .flex-col { display: flex; flex-direction: column; }
 .flex-1 { flex: 1; }
 .flex-between { display: flex; justify-content: space-between; }
@@ -336,6 +345,10 @@ html, body, #root, .app-root { height: 100%; margin: 0 }
   align-items: center;
   padding: 0 20px;
   color: #e6eef8;
+  gap: 16px;
+  flex-shrink: 0;
+  width: 100%;
+  z-index: 100;
 }
 
 .header-logo-container {
@@ -405,8 +418,10 @@ html, body, #root, .app-root { height: 100%; margin: 0 }
   background: var(--panel);
   color: #e6eef8;
   padding: 16px;
-  height: 100vh;
+  height: calc(100vh - 64px);
   box-sizing: border-box;
+  overflow-y: auto;
+  flex-shrink: 0;
 }
 
 .sidebar-section-title {
@@ -747,14 +762,14 @@ textarea::placeholder {
 .mobile-nav {
   display: none;
   position: fixed;
-  top: 0;
+  top: 64px;
   left: 0;
   right: 0;
   bottom: 0;
   background: var(--bg);
-  z-index: 999;
+  z-index: 998;
   flex-direction: column;
-  padding-top: 60px;
+  overflow-y: auto;
 }
 
 .mobile-nav.open {
@@ -772,6 +787,7 @@ textarea::placeholder {
   cursor: pointer;
   min-width: 44px;
   min-height: 44px;
+  z-index: 1000;
 }
 
 .mobile-nav-content {
@@ -779,6 +795,34 @@ textarea::placeholder {
   flex-direction: column;
   gap: 8px;
   padding: 0 16px;
+  overflow-y: auto;
+}
+
+.mobile-nav-content .sidebar-main {
+  display: flex !important;
+  flex-direction: column;
+  width: 100% !important;
+  height: auto !important;
+  padding: 0 !important;
+  background: transparent !important;
+  gap: 16px;
+}
+
+.mobile-nav-content .sidebar-section-title {
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.mobile-nav-content .sidebar-type-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mobile-nav-content .sidebar-options-grid {
+  display: grid;
+  gap: 12px;
+  margin-top: 0;
 }
 
 .mobile-nav-content .tab-button {
