@@ -103,11 +103,6 @@ async def get_ai_insights(
             findings_count=len(findings),
             content_type=content_type,
         )
-            source="ai_gateway",
-            model="claude-sonnet-4-6",
-            findings_count=len(findings),
-            content_type=content_type,
-        )
 
         findings_summary = json.dumps(
             [
