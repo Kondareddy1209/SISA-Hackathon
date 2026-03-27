@@ -1,55 +1,69 @@
-import json
 import os
+import json
 from typing import Dict, List
 
-from google import genai
-from google.genai import types
+import google.generativeai as genai
 
 from app.utils.logger import log_event
 
-MODEL_NAME = "gemini-1.5-flash-8b"
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY")) if os.getenv("GEMINI_API_KEY") else None
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+if GEMINI_API_KEY:
+    genai.configure(api_key=GEMINI_API_KEY)
+
+# Models to try in order - all work on v1 API without billing
+MODELS_TO_TRY = [
+    "models/gemini-1.5-flash-8b",
+    "models/gemini-1.5-flash",
+    "models/gemini-pro",
+]
 
 
-async def analyze_with_gemini(prompt: str, system_prompt: str = "") -> dict:
-    try:
-        global client
-        api_key = os.getenv("GEMINI_API_KEY", "").strip()
-        if not api_key:
-            return {
-                "success": False,
-                "error": True,
-                "type": "GEMINI_ERROR",
-                "message": "GEMINI_API_KEY not set",
-            }
+async def analyze_with_gemini(prompt: str, system_prompt: str = "", findings_count: int = 0, content_type: str = "log") -> dict:
+    if not GEMINI_API_KEY:
+        return {"success": False, "error": True, "type": "NO_API_KEY", "message": "GEMINI_API_KEY not set"}
 
-        if client is None:
-            client = genai.Client(api_key=api_key)
+    full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
 
-        full_prompt = f"{system_prompt}\n\n{prompt}" if system_prompt else prompt
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=full_prompt,
-            config=types.GenerateContentConfig(
-                temperature=0.7,
-                max_output_tokens=1024,
-            ),
-        )
+    for model_name in MODELS_TO_TRY:
+        try:
+            model = genai.GenerativeModel(model_name)
+            response = model.generate_content(
+                full_prompt,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.7,
+                    max_output_tokens=1024,
+                )
+            )
 
-        return {
-            "success": True,
-            "content": response.text or "",
-            "model": MODEL_NAME,
-            "provider": "google",
-        }
+            if response.text:
+                return {
+                    "success": True,
+                    "content": response.text,
+                    "model": model_name,
+                    "provider": "google"
+                }
 
-    except Exception as e:
-        return {
-            "success": False,
-            "error": True,
-            "type": "GEMINI_ERROR",
-            "message": str(e),
-        }
+        except Exception as e:
+            error_str = str(e)
+            if "429" in error_str or "RESOURCE_EXHAUSTED" in error_str:
+                continue  # try next model
+            elif "404" in error_str or "NOT_FOUND" in error_str:
+                continue  # try next model
+            else:
+                return {
+                    "success": False,
+                    "error": True,
+                    "type": "GEMINI_ERROR",
+                    "message": error_str
+                }
+
+    return {
+        "success": False,
+        "error": True,
+        "type": "ALL_MODELS_FAILED",
+        "message": "All Gemini models failed or quota exceeded"
+    }
 
 
 async def get_gemini_insights(
@@ -58,15 +72,13 @@ async def get_gemini_insights(
     raw_content: str = "",
 ) -> List[str]:
     """
-    Get AI-powered insights from Google Gemini.
-    Falls back gracefully if Gemini is unavailable.
+    Compatibility wrapper for the existing Claude fallback path.
     """
     if not findings:
         log_event("DEBUG", "Gemini insights skipped because no findings were detected", source="gemini_gateway")
         return ["No sensitive data detected. Content appears secure."]
 
-    api_key = os.getenv("GEMINI_API_KEY", "").strip()
-    if not api_key:
+    if not GEMINI_API_KEY:
         log_event("WARN", "Gemini insights skipped because GEMINI_API_KEY is not configured", source="gemini_gateway")
         return []
 
@@ -115,12 +127,15 @@ Rules:
         "INFO",
         "Gemini API call started",
         source="gemini_gateway",
-        model=MODEL_NAME,
         findings_count=len(findings),
         content_type=content_type,
     )
 
-    result = await analyze_with_gemini(prompt)
+    result = await analyze_with_gemini(
+        prompt,
+        findings_count=len(findings),
+        content_type=content_type,
+    )
     if not result.get("success"):
         log_event(
             "ERROR",
@@ -135,7 +150,7 @@ Rules:
         "INFO",
         "Gemini API call completed",
         source="gemini_gateway",
-        model=MODEL_NAME,
+        model=result.get("model", ""),
         response_preview=raw_response[:120],
     )
 
