@@ -165,29 +165,34 @@ Rules:
                         model="claude-sonnet-4-6",
                         max_tokens=600,
                         messages=[{"role": "user", "content": prompt}],
-                    ),, attempting Gemini fallback",
+                    ),
+                ),
+                timeout=25,
+            )
+        except Exception as e:
+            error_message = str(e).lower()
+            if "credit" in error_message or "insufficient" in error_message:
+                log_event(
+                    "WARN",
+                    "Anthropic credits exhausted, attempting Gemini fallback",
                     source="ai_gateway",
-                    error_type="INSUFFICIENT_CREDITS"
+                    error_type="INSUFFICIENT_CREDITS",
                 )
                 gemini_result = await get_gemini_insights(findings, content_type, raw_content)
                 if gemini_result:
-                    log_event("INFO", "Successfully switched to Gemini after Claude credit exhaustion", source="ai_gateway")
+                    log_event(
+                        "INFO",
+                        "Successfully switched to Gemini after Claude credit exhaustion",
+                        source="ai_gateway",
+                    )
                     return gemini_result
                 return {
                     "error": True,
                     "type": "INSUFFICIENT_CREDITS",
                     "message": "AI service temporarily unavailable. Anthropic credits exhausted and Gemini unavailable.",
-                    "fallback": "Using rule-based analysis
-                    source="ai_gateway",
-                    error_type="INSUFFICIENT_CREDITS"
-                )
-                return {
-                    "error": True,
-                    "type": "INSUFFICIENT_CREDITS",
-                    "message": "AI service temporarily unavailable. API credits exhausted.",
-                    "fallback": "Please contact administrator to top up API credits."
+                    "fallback": "Using rule-based analysis",
                 }
-            raise e
+            raise
 
         raw_response = message.content[0].text.strip()
         log_event(
