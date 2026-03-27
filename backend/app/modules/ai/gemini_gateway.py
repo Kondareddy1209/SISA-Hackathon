@@ -7,7 +7,7 @@ from google.genai import types
 
 from app.utils.logger import log_event
 
-MODEL_NAME = "gemini-2.0-flash"
+MODEL_NAME = "gemini-1.5-flash-8b"
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY")) if os.getenv("GEMINI_API_KEY") else None
 
 
