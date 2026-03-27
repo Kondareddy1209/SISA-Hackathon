@@ -7,6 +7,9 @@ from typing import Dict, List
 import anthropic
 
 from app.utils.logger import log_event
+from app.modules.ai.gemini_gateway import get_gemini_insights
+
+AI_PROVIDER = os.getenv("AI_PROVIDER", "gemini")
 
 
 def _get_client() -> anthropic.Anthropic:
@@ -80,9 +83,17 @@ async def get_ai_insights(
     raw_content: str = "",
 ) -> List[str]:
     """
-    Get AI-powered insights from Claude.
-    Falls back to rule-based insights if Claude is unavailable or parsing fails.
+    Get AI-powered insights from the configured provider (Gemini by default, Claude as fallback).
+    Falls back to rule-based insights if AI services are unavailable.
     """
+    # Try primary provider first
+    if AI_PROVIDER == "gemini":
+        log_event("INFO", "Using Gemini as primary AI provider", source="ai_gateway")
+        gemini_result = await get_gemini_insights(findings, content_type, raw_content)
+        if gemini_result:
+            return gemini_result
+        log_event("INFO", "Gemini returned no insights, falling back to Claude", source="ai_gateway")
+    
     if not findings:
         log_event("DEBUG", "AI insights skipped because no findings were detected", source="ai_gateway")
         return ["No sensitive data detected. Content appears secure."]
@@ -154,15 +165,19 @@ Rules:
                         model="claude-sonnet-4-6",
                         max_tokens=600,
                         messages=[{"role": "user", "content": prompt}],
-                    ),
-                ),
-                timeout=25.0,
-            )
-        except anthropic.BadRequestError as e:
-            if "credit balance is too low" in str(e).lower():
-                log_event(
-                    "ERROR",
-                    "Anthropic API credits exhausted",
+                    ),, attempting Gemini fallback",
+                    source="ai_gateway",
+                    error_type="INSUFFICIENT_CREDITS"
+                )
+                gemini_result = await get_gemini_insights(findings, content_type, raw_content)
+                if gemini_result:
+                    log_event("INFO", "Successfully switched to Gemini after Claude credit exhaustion", source="ai_gateway")
+                    return gemini_result
+                return {
+                    "error": True,
+                    "type": "INSUFFICIENT_CREDITS",
+                    "message": "AI service temporarily unavailable. Anthropic credits exhausted and Gemini unavailable.",
+                    "fallback": "Using rule-based analysis
                     source="ai_gateway",
                     error_type="INSUFFICIENT_CREDITS"
                 )
